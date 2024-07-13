@@ -15,11 +15,18 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@atlaskit/pragmatic-drag-and-drop": "^1.2.1",
+    "@atlaskit/pragmatic-drag-and-drop-auto-scroll": "^1.4.0",
+    "@atlaskit/pragmatic-drag-and-drop-flourish": "^1.1.0",
+    "@atlaskit/pragmatic-drag-and-drop-hitbox": "^1.0.3",
+    "@atlaskit/pragmatic-drag-and-drop-live-region": "^1.0.6",
     "@tanstack/vue-query": "^5.51.0",
     "@vee-validate/zod": "^4.13.2",
     "@vueuse/core": "^10.11.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "invariant": "^2.2.4",
+    "lodash": "^4.17.21",
     "lucide-vue-next": "^0.407.0",
     "pinia": "^2.1.7",
     "radix-vue": "^1.9.0",
@@ -31,10 +38,13 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@iconify-json/ic": "^1.1.17",
+    "@iconify/tailwind": "^1.1.1",
     "@playwright/test": "^1.44.1",
     "@rushstack/eslint-patch": "^1.8.0",
     "@tsconfig/node20": "^20.1.4",
     "@types/jsdom": "^21.1.7",
+    "@types/lodash": "^4.17.6",
     "@types/node": "^20.14.5",
     "@vitejs/plugin-vue": "^5.0.5",
     "@vitejs/plugin-vue-jsx": "^4.0.0",
