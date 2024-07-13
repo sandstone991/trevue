@@ -1,38 +1,56 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
-import type { Column, Card } from '@/interface'
+import { type Column, type Card, type Operation } from '@/interface'
+import { reorder } from '@atlaskit/pragmatic-drag-and-drop/reorder';
 
 
 export const useBoardStore = defineStore('board', () => {
   const columns = ref<Column[]>([])
+  const columnIds = computed(() => columns.value.map((column) => column.id))
+  const lastDNDOperation = ref<Operation | null>(null);
+  const isDragging = ref(false)
+
+  function setDragging(value: boolean) {
+    isDragging.value = value
+  }
   const idToColumnMap = computed(() => {
     return columns.value.reduce(
       (acc, board) => {
-        acc[board.id] = { board: board, index: columns.value.indexOf(board) }
+        acc[board.id] = { column: board, index: columns.value.indexOf(board) }
         return acc
       },
       {} as Record<
         string,
         {
-          board: Column
+          column: Column
           index: number
         }
       >
     )
   })
+
+  function reorderColumn(startIndex: number, finishIndex: number) {
+    columns.value = reorder({
+      list: columns.value,
+      startIndex,
+      finishIndex
+      });
+  }
+  function reorderCard(columnId: string, startIndex: number, finishIndex: number) {
+    const column = getColumn(columnId)
+    column.cards = reorder({
+      list: column.cards,
+      startIndex,
+      finishIndex
+    })
+  }
   function getColumn(id:string){
-    return idToColumnMap.value[id].board
+    return idToColumnMap.value[id].column
   }
   function getColumnIndex(id:string){
     return idToColumnMap.value[id].index
   }
-  function swapColumns(boardId1: string, boardId2: string) {
-    const index1 = getColumnIndex(boardId1)
-    const index2 = getColumnIndex(boardId2)
-    const temp = columns.value[index1]
-    columns.value[index1] = columns.value[index2]
-    columns.value[index2] = temp
-  }
+  
     function _addColumn(board: Column) {
         columns.value.push(board)
     }
@@ -49,14 +67,7 @@ export const useBoardStore = defineStore('board', () => {
         const index = board.cards.findIndex((card) => card.id === cardId)
         board.cards.splice(index, 1)
     }
-    function swapCards(boardId: string, cardId1: string, cardId2: string) {
-        const board = getColumn(boardId)
-        const index1 = board.cards.findIndex((card) => card.id === cardId1)
-        const index2 = board.cards.findIndex((card) => card.id === cardId2)
-        const temp = board.cards[index1]
-        board.cards[index1] = board.cards[index2]
-        board.cards[index2] = temp
-    }
+
     function addColumn(boardName: string){
         const newColumn: Column = {
             id: Date.now().toString(),
@@ -74,18 +85,45 @@ export const useBoardStore = defineStore('board', () => {
         }
         _addCard(boardId, newCard)
     }
-    const isEmpty = computed(() => columns.value.length === 0)
+    function moveCard	({
+			startColumnId,
+			finishColumnId,
+			itemIndexInStartColumn,
+			itemIndexInFinishColumn,
+		}: {
+			startColumnId: string;
+			finishColumnId: string;
+			itemIndexInStartColumn: number;
+			itemIndexInFinishColumn?: number;
+		}){
+        const card = getColumn(startColumnId).cards[itemIndexInStartColumn]
+        const startColumn = getColumn(startColumnId)
+        const finishColumn = getColumn(finishColumnId)
+        startColumn.cards.splice(itemIndexInStartColumn, 1)
+        if (typeof itemIndexInFinishColumn === 'number') {
+            finishColumn.cards.splice(itemIndexInFinishColumn, 0, card)
+        } else {
+            finishColumn.cards.push(card)
+        }
+    }
+    const isEmpty = computed(() => columns.value.length === 0);
+    
     return {
         columns,
         idToColumnMap,
         getColumn,
         getColumnIndex,
-        swapColumns,
         addColumn,
         removeColumn,
         addCard,
         removeCard,
-        swapCards,
-        isEmpty
+        isEmpty,
+        lastDNDOperation,
+        columnIds,
+        reorderColumn,
+        reorderCard,
+        moveCard,
+        isDragging,
+        setDragging
     }
 })

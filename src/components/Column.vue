@@ -1,17 +1,26 @@
 <script setup lang="ts">
-import type { Column } from '@/interface'
+import { type ColumnDNDState, type Column } from '@/interface'
+import invariant from 'tiny-invariant'
+import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine'
+
 import Card from './Card.vue'
-import { ref, watchEffect } from 'vue'
+import { onMounted, onUnmounted, ref, watch, watchEffect } from 'vue'
 import { onClickOutside } from '@vueuse/core'
+import { draggable, dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { useBoardStore } from '@/stores/board'
 import Button from './ui/button/Button.vue'
 import Textarea from './ui/textarea/Textarea.vue'
+import {
+  attachClosestEdge,
+  extractClosestEdge
+} from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge'
 const props = defineProps<{ column: Column }>()
 const boards = useBoardStore()
 const isInCreationDialog = ref(false)
 const newCardName = ref('')
 const newCardInput = ref<HTMLInputElement | null>(null)
 const newCardDialog = ref<HTMLElement | null>(null)
+
 watchEffect(() => {
   if (isInCreationDialog.value) {
     newCardInput.value?.focus()
@@ -35,9 +44,77 @@ onClickOutside(newCardDialog, () => {
   handleNewCard()
   exitDialog()
 })
+
+const dndState = ref<ColumnDNDState>({
+  type: 'idle'
+})
+const columnRef = ref<HTMLElement | null>(null)
+const cleanup = ref<() => void>(() => () => {})
+onMounted(() => {
+  invariant(columnRef)
+  const dispose = combine(
+    draggable({
+      element: columnRef.value!,
+      getInitialData: () => ({ columnId: props.column.id, type: 'column' }),
+      onDragStart: () => {
+        boards.setDragging(true)
+      },
+      onDrop: () => {
+        dndState.value = { type: 'idle' }
+        boards.setDragging(false)
+      }
+    }),
+    dropTargetForElements({
+      element: columnRef.value!,
+      canDrop: ({ source }) => {
+        return source.data.type === 'column'
+      },
+      getIsSticky: () => true,
+      getData: ({ input, element }) => {
+        const data = { columnId: props.column.id }
+        return attachClosestEdge(data, {
+          input,
+          element,
+          allowedEdges: ['left', 'right']
+        })
+      },
+      onDragEnter: (args) => {
+        dndState.value = {
+          type: 'is-column-over',
+          closestEdge: extractClosestEdge(args)
+        }
+      },
+      onDrag: (args) => {
+        const closestEdge = extractClosestEdge(args.self.data)
+        if (
+          dndState.value.type === 'is-column-over' &&
+          dndState.value.closestEdge === closestEdge
+        ) {
+          return
+        }
+        dndState.value = {
+          type: 'is-column-over',
+          closestEdge
+        }
+      },
+      onDragLeave: () => {
+        dndState.value = { type: 'idle' }
+      },
+      onDrop: () => {
+        dndState.value = { type: 'idle' }
+      }
+    })
+  )
+
+  cleanup.value = dispose
+})
+
+onUnmounted(() => {
+  cleanup.value()
+})
 </script>
 <template>
-  <div class="bg-stone-900 text-white w-[272px] rounded-md shadow-md h-fit">
+  <div ref="columnRef" class="bg-stone-900 text-white w-[272px] rounded-md shadow-md h-fit">
     <div
       class="flex items-center gap-2 overflow-hidden cursor-pointer px-4 py-2"
       style="overflow-wrap: anywhere"

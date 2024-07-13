@@ -1,11 +1,17 @@
 <script setup lang="ts">
 import { useBoardStore } from '@/stores/board'
-import { ref, watchEffect } from 'vue'
+import { onMounted, onUnmounted, ref, watchEffect } from 'vue'
 import { onClickOutside } from '@vueuse/core'
 import ScrollArea from '@/components/ui/scroll-area/ScrollArea.vue'
 import Button from '@/components/ui/button/Button.vue'
 import Input from '@/components/ui/input/Input.vue'
 import Column from '@/components/Column.vue'
+import { usePostDndEffects } from '@/composables/dnd/usePostEffects'
+import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine'
+import { monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
+import { extractClosestEdge } from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge'
+import { getReorderDestinationIndex } from '@atlaskit/pragmatic-drag-and-drop-hitbox/util/get-reorder-destination-index'
+
 const boards = useBoardStore()
 const isInCreationDialog = ref(false)
 const newColumnName = ref('')
@@ -28,6 +34,36 @@ function clearNewColumn() {
 }
 onClickOutside(newColumnDialog, () => {
   clearNewColumn()
+})
+usePostDndEffects(boards)
+const cleanup = ref<() => void>(() => () => {})
+onMounted(() => {
+  const dispose = combine(
+    monitorForElements({
+      canMonitor: () => true,
+      onDrop: (args) => {
+        const { location, source } = args
+        if (!location.current.dropTargets.length) return
+        if (source.data.type === 'column') {
+          const startIndex = boards.idToColumnMap[source.data.columnId as string].index
+          const target = location.current.dropTargets[0]
+          const indexOfTarget = boards.idToColumnMap[target.data.columnId as string].index
+          const closestEdgeOfTarget = extractClosestEdge(target.data)
+          const finishIndex = getReorderDestinationIndex({
+            startIndex,
+            indexOfTarget,
+            closestEdgeOfTarget,
+            axis: 'horizontal'
+          })
+          boards.reorderColumn(startIndex, finishIndex)
+        }
+      }
+    })
+  )
+  cleanup.value = dispose
+})
+onUnmounted(() => {
+  cleanup.value()
 })
 </script>
 
