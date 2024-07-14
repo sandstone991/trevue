@@ -2,16 +2,16 @@
 import { cn } from '@/lib/utils'
 
 // port of https://github.com/atlassian/pragmatic-drag-and-drop/blob/main/packages/react-drop-indicator/src/box.tsx to Vue 3
-const props = defineProps<{ edge: 'top' | 'bottom' | 'left' | 'right' }>()
+const props = defineProps<{ edge: 'top' | 'bottom' | 'left' | 'right'; gap?: number }>()
 const TERMINAL_SIZE = 10
 const LINE = {
   borderRadius: 0,
   thickness: 2,
-  backgroundColor: '#3730a3'
+  backgroundColor: '#6e69b8'
 }
 const offsetToAlignTerminalWithLine = (LINE.thickness - TERMINAL_SIZE) / 2
 const lineOffset = TERMINAL_SIZE / 2
-const localLineOffset = -0.5 * (LINE.thickness + 10)
+const localLineOffset = -0.5 * (LINE.thickness + (props.gap ?? 10))
 const edgeToOrientationMap = {
   top: 'horizontal',
   bottom: 'horizontal',
@@ -31,7 +31,7 @@ const orientation = edgeToOrientationMap[props.edge]
   position: absolute;
   z-index: 1;
   pointer-events: none;
-  background-color: #3730a3;
+  background-color: #6e69b8;
 }
 .line::before {
   content: '';
@@ -74,7 +74,7 @@ const orientation = edgeToOrientationMap[props.edge]
   bottom: v-bind("localLineOffset + 'px'");
 }
 .bottom::before {
-  right: v-bind("offsetToAlignTerminalWithLine + 'px'");
+  right: v-bind("offsetToAlignTerminalWithLine  + 'px'");
 }
 .left {
   left: v-bind("localLineOffset + 'px'");

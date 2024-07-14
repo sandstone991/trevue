@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { type ColumnDNDState, type Column } from '@/interface'
 import invariant from 'tiny-invariant'
-import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine'
 
 import Card from './Card.vue'
-import { onMounted, onUnmounted, ref, watchEffect } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref, watchEffect } from 'vue'
 import { onClickOutside } from '@vueuse/core'
-import { draggable, dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { useBoardStore } from '@/stores/board'
 import Button from './ui/button/Button.vue'
 import Textarea from './ui/textarea/Textarea.vue'
@@ -14,16 +12,20 @@ import {
   attachClosestEdge,
   extractClosestEdge
 } from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge'
+import { draggable, dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
+import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine'
+
 import DropIndicator from './DropIndicator.vue'
+import { autoScrollForElements } from '@atlaskit/pragmatic-drag-and-drop-auto-scroll/element'
+
 import { cn } from '@/lib/utils'
-import ScrollArea from './ui/scroll-area/ScrollArea.vue'
 const props = defineProps<{ column: Column }>()
 const boards = useBoardStore()
 const isInCreationDialog = ref(false)
 const newCardName = ref('')
 const newCardInput = ref<HTMLInputElement | null>(null)
 const newCardDialog = ref<HTMLElement | null>(null)
-
+const scrollableRef = ref<HTMLElement | null>(null)
 watchEffect(() => {
   if (isInCreationDialog.value) {
     newCardInput.value?.focus()
@@ -32,6 +34,9 @@ watchEffect(() => {
 function handleNewCard() {
   if (!newCardName.value) return exitDialog()
   boards.addCard(props.column.id, newCardName.value)
+  nextTick(() => {
+    scrollableRef.value?.scrollTo({ top: scrollableRef.value!.scrollHeight, behavior: 'instant' })
+  })
   clearNewCard()
 }
 
@@ -118,6 +123,12 @@ onMounted(() => {
       onDrop: () => {
         dndState.value = { type: 'idle' }
       }
+    }),
+    autoScrollForElements({
+      element: scrollableRef.value!,
+      canScroll: (args) => {
+        return args.source.data.type === 'card'
+      }
     })
   )
 
@@ -133,9 +144,12 @@ onUnmounted(() => {
     <div
       :class="
         cn(
-          'bg-stone-900 text-white w-[272px] h-fit max-h-full rounded-md shadow-md flex flex-col',
+          'bg-stone-900 text-white w-[272px] h-fit max-h-full rounded-md shadow-md flex flex-col transition-all',
           {
             'opacity-50': isDragging
+          },
+          {
+            'bg-indigo-400 border-blue-500 border-2': dndState.type === 'is-card-over'
           }
         )
       "
@@ -147,8 +161,9 @@ onUnmounted(() => {
         <span class="text-lg font-semibold">{{ column.title }}</span>
       </div>
       <ol
-        class="flex flex-col items-center gap-2 w-full h-full max-h-full overflow-auto px-2 py-2"
+        class="w-full h-full max-h-full overflow-auto px-2 py-2 space-y-3"
         style="scrollbar-width: thin"
+        ref="scrollableRef"
       >
         <Card v-for="card in column.cards" :key="card.id" :card="card" />
         <Button

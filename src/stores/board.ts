@@ -9,6 +9,13 @@ export const useBoardStore = defineStore('board', () => {
   const columnIds = computed(() => columns.value.map((column) => column.id))
   const lastDNDOperation = ref<Operation | null>(null);
   const columnIdsToDom = ref<Record<string, HTMLElement | null>>({});
+  const cardIdsToDom = ref<Record<string, HTMLElement | null>>({});
+  function setCardDom(cardId: string, dom: HTMLElement | null) {
+    cardIdsToDom.value[cardId] = dom
+  }
+  function removeCardDom(cardId: string) {
+    delete cardIdsToDom.value[cardId]
+  }
   function setColumnDom(columnId: string, dom: HTMLElement | null) {
     columnIdsToDom.value[columnId] = dom
   }
@@ -131,6 +138,9 @@ export const useBoardStore = defineStore('board', () => {
         setColumnDom,
         removeColumnDom,
         columnIdsToDom,
-        setLastDndOperation
+        setLastDndOperation,
+        setCardDom,
+        removeCardDom,
+        cardIdsToDom
     } 
 })

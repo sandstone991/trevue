@@ -14,7 +14,8 @@ const emits = defineEmits<{
 }>()
 const inputRef = ref<HTMLInputElement | null>(null)
 defineExpose({
-  focus: () => inputRef.value?.focus()
+  focus: () => inputRef.value?.focus(),
+  scrollIntoView: () => inputRef.value?.scrollIntoView({ behavior: 'smooth', block: 'center' })
 })
 
 const modelValue = useVModel(props, 'modelValue', emits, {

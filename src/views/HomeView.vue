@@ -2,7 +2,6 @@
 import { useBoardStore } from '@/stores/board'
 import { onMounted, onUnmounted, ref, watchEffect } from 'vue'
 import { onClickOutside } from '@vueuse/core'
-import ScrollArea from '@/components/ui/scroll-area/ScrollArea.vue'
 import Button from '@/components/ui/button/Button.vue'
 import Input from '@/components/ui/input/Input.vue'
 import Column from '@/components/Column.vue'
