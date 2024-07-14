@@ -25,11 +25,12 @@ watch(
         const columnDom = boards.columnIdsToDom[destinationColumn.column.id];
         columnDom?.focus();
         columnDom?.animate([{
-          opacity: 0.5
+          opacity: 0.5, offset: .3, easing: "ease-in"
+        }, {
+          opacity: 1, offset: 1, easing: "ease-out"
         }], {
           delay: 0,
-          duration: 200,
-          easing: 'ease-in-out',
+          duration: 300,
           iterations:1,
 
         }).play()
