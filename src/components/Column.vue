@@ -158,7 +158,10 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <DropIndicator v-if="dndState.type === 'is-column-over'" :edge="dndState.closestEdge!" />
+    <DropIndicator
+      v-if="dndState.type === 'is-column-over' && !!dndState.closestEdge"
+      :edge="dndState.closestEdge!"
+    />
   </div>
 </template>
 <style scoped></style>

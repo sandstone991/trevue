@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils'
 
 // port of https://github.com/atlassian/pragmatic-drag-and-drop/blob/main/packages/react-drop-indicator/src/box.tsx to Vue 3
 const props = defineProps<{ edge: 'top' | 'bottom' | 'left' | 'right' }>()
-const TERMINAL_SIZE = 8
+const TERMINAL_SIZE = 10
 const LINE = {
   borderRadius: 0,
   thickness: 2,
