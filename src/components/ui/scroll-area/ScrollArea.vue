@@ -15,17 +15,26 @@ const props = defineProps<
     scrollBarClass?: HTMLAttributes['class']
     scrollBarThumbClass?: HTMLAttributes['class']
     scrollBarOrientation?: 'vertical' | 'horizontal'
+    scrollAreaViewportClass?: HTMLAttributes['class']
   }
 >()
 
 const delegatedProps = computed(() => {
-  return omit(props, ['scrollBarClass', 'scrollBarOrientation', 'class', 'scrollBarThumbClass'])
+  return omit(props, [
+    'scrollBarClass',
+    'scrollBarOrientation',
+    'class',
+    'scrollBarThumbClass',
+    'scrollAreaViewportClass'
+  ])
 })
 </script>
 
 <template>
   <ScrollAreaRoot v-bind="delegatedProps" :class="cn('relative overflow-hidden', props.class)">
-    <ScrollAreaViewport class="h-full w-full rounded-[inherit] [&>div]:!h-full">
+    <ScrollAreaViewport
+      :class="cn('h-full w-full rounded-[inherit]', props.scrollAreaViewportClass)"
+    >
       <slot />
     </ScrollAreaViewport>
     <ScrollBar

@@ -16,6 +16,7 @@ import {
 } from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge'
 import DropIndicator from './DropIndicator.vue'
 import { cn } from '@/lib/utils'
+import ScrollArea from './ui/scroll-area/ScrollArea.vue'
 const props = defineProps<{ column: Column }>()
 const boards = useBoardStore()
 const isInCreationDialog = ref(false)
@@ -128,12 +129,15 @@ onUnmounted(() => {
 })
 </script>
 <template>
-  <div class="w-fit h-full flex relative" ref="columnRef">
+  <div class="w-fit h-full max-h-full flex relative" ref="columnRef">
     <div
       :class="
-        cn('bg-stone-900 text-white w-[272px] rounded-md shadow-md h-fit', {
-          'opacity-50': isDragging
-        })
+        cn(
+          'bg-stone-900 text-white w-[272px] h-fit max-h-full rounded-md shadow-md flex flex-col',
+          {
+            'opacity-50': isDragging
+          }
+        )
       "
     >
       <div
@@ -142,7 +146,10 @@ onUnmounted(() => {
       >
         <span class="text-lg font-semibold">{{ column.title }}</span>
       </div>
-      <div class="flex flex-col items-center gap-2 w-full px-2 py-2">
+      <ol
+        class="flex flex-col items-center gap-2 w-full h-full max-h-full overflow-auto px-2 py-2"
+        style="scrollbar-width: thin"
+      >
         <Card v-for="card in column.cards" :key="card.id" :card="card" />
         <Button
           :as="'div'"
@@ -174,9 +181,8 @@ onUnmounted(() => {
             placeholder="Enter a title for this card..."
           />
         </div>
-      </div>
+      </ol>
     </div>
-
     <DropIndicator
       v-if="dndState.type === 'is-column-over' && !!dndState.closestEdge"
       :edge="dndState.closestEdge!"
