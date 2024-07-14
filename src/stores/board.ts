@@ -8,10 +8,15 @@ export const useBoardStore = defineStore('board', () => {
   const columns = ref<Column[]>([])
   const columnIds = computed(() => columns.value.map((column) => column.id))
   const lastDNDOperation = ref<Operation | null>(null);
-  const isDragging = ref(false)
-
-  function setDragging(value: boolean) {
-    isDragging.value = value
+  const columnIdsToDom = ref<Record<string, HTMLElement | null>>({});
+  function setColumnDom(columnId: string, dom: HTMLElement | null) {
+    columnIdsToDom.value[columnId] = dom
+  }
+  function removeColumnDom(columnId: string) {
+    delete columnIdsToDom.value[columnId]
+  }
+  function setLastDndOperation(operation: Operation) {
+    lastDNDOperation.value = operation
   }
   const idToColumnMap = computed(() => {
     return columns.value.reduce(
@@ -123,7 +128,9 @@ export const useBoardStore = defineStore('board', () => {
         reorderColumn,
         reorderCard,
         moveCard,
-        isDragging,
-        setDragging
-    }
+        setColumnDom,
+        removeColumnDom,
+        columnIdsToDom,
+        setLastDndOperation
+    } 
 })

@@ -4,27 +4,35 @@ import { watch, onUnmounted } from "vue"
 export const usePostDndEffects = (boards: ReturnType<typeof useBoardStore>)=>{
     
 watch(
-    // @ts-ignore
-    boards.lastDNDOperation,
+    ()=>boards.lastDNDOperation,
     () => {
       if (boards.lastDNDOperation === null) {
         return
       }
-      const { outcome, trigger } = boards.lastDNDOperation
-      if (trigger !== 'keyboard') {
-        return
-      }
+      const { outcome } = boards.lastDNDOperation
+     
       if (outcome.type === 'column-reorder') {
         const { startIndex, finishIndex } = outcome
         const sortedColumns = boards.columnIds
         const columnsMap = boards.idToColumnMap
         const sourceColumn = columnsMap[sortedColumns[startIndex]]
+        const destinationColumn = columnsMap[sortedColumns[finishIndex]]
         liveRegion.announce(
           `You've moved ${sourceColumn.column.title} from position ${
             startIndex + 1
           } to position ${finishIndex + 1} of ${sortedColumns.length}.`
         )
-        //todo make item flash
+        const columnDom = boards.columnIdsToDom[destinationColumn.column.id];
+        columnDom?.focus();
+        columnDom?.animate([{
+          opacity: 0.5
+        }], {
+          delay: 0,
+          duration: 200,
+          easing: 'ease-in-out',
+          iterations:1,
+
+        }).play()
         return
       }
       if (outcome.type === 'card-reorder') {
@@ -53,9 +61,6 @@ watch(
           } to position ${finishPosition} in the ${destinationColumn.column.cards} column.`
         )
       }
-    },
-    {
-      immediate: true
     }
   )
   onUnmounted(()=>{

@@ -56,6 +56,15 @@ onMounted(() => {
             axis: 'horizontal'
           })
           boards.reorderColumn(startIndex, finishIndex)
+          boards.setLastDndOperation({
+            trigger: 'pointer',
+            outcome: {
+              type: 'column-reorder',
+              columnId: source.data.columnId as string,
+              startIndex,
+              finishIndex
+            }
+          })
         }
       }
     })

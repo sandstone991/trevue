@@ -4,7 +4,7 @@ import invariant from 'tiny-invariant'
 import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine'
 
 import Card from './Card.vue'
-import { onMounted, onUnmounted, ref, watch, watchEffect } from 'vue'
+import { onMounted, onUnmounted, ref, watchEffect } from 'vue'
 import { onClickOutside } from '@vueuse/core'
 import { draggable, dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { useBoardStore } from '@/stores/board'
@@ -15,6 +15,7 @@ import {
   extractClosestEdge
 } from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge'
 import DropIndicator from './DropIndicator.vue'
+import { cn } from '@/lib/utils'
 const props = defineProps<{ column: Column }>()
 const boards = useBoardStore()
 const isInCreationDialog = ref(false)
@@ -37,7 +38,6 @@ function clearNewCard() {
   newCardName.value = ''
 }
 function exitDialog() {
-  console.log('exit')
   clearNewCard()
   isInCreationDialog.value = false
 }
@@ -51,6 +51,19 @@ const dndState = ref<ColumnDNDState>({
 })
 const columnRef = ref<HTMLElement | null>(null)
 const cleanup = ref<() => void>(() => () => {})
+const isDragging = ref(false)
+
+function useSetDom() {
+  onMounted(() => {
+    invariant(columnRef)
+    boards.setColumnDom(props.column.id, columnRef.value!)
+  })
+  onUnmounted(() => {
+    boards.removeColumnDom(props.column.id)
+  })
+}
+
+useSetDom()
 onMounted(() => {
   invariant(columnRef)
   const dispose = combine(
@@ -58,11 +71,11 @@ onMounted(() => {
       element: columnRef.value!,
       getInitialData: () => ({ columnId: props.column.id, type: 'column' }),
       onDragStart: () => {
-        boards.setDragging(true)
+        isDragging.value = true
       },
       onDrop: () => {
         dndState.value = { type: 'idle' }
-        boards.setDragging(false)
+        isDragging.value = false
       }
     }),
     dropTargetForElements({
@@ -116,7 +129,14 @@ onUnmounted(() => {
 </script>
 <template>
   <div class="w-fit h-fit flex relative">
-    <div ref="columnRef" class="bg-stone-900 text-white w-[272px] rounded-md shadow-md h-fit">
+    <div
+      ref="columnRef"
+      :class="
+        cn('bg-stone-900 text-white w-[272px] rounded-md shadow-md h-fit', {
+          'opacity-50': isDragging
+        })
+      "
+    >
       <div
         class="flex items-center gap-2 overflow-hidden cursor-pointer px-4 py-2"
         style="overflow-wrap: anywhere"

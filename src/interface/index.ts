@@ -44,5 +44,3 @@ export type Trigger = 'pointer' | 'keyboard';
 export type ColumnDNDState = | { type: 'idle' }
 | { type: 'is-card-over' }
 | { type: 'is-column-over'; closestEdge: Edge | null }
-| { type: 'generate-safari-column-preview'; container: HTMLElement }
-| { type: 'generate-column-preview' };
