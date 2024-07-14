@@ -77,7 +77,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="h-full w-full flex flex-col">
+  <div class="h-full w-full flex flex-col grow">
     <header class="w-full h-10 bg-stone-400"></header>
     <div class="w-full h-full overflow-auto">
       <ScrollArea
@@ -99,7 +99,7 @@ onUnmounted(() => {
           </div>
           <div
             v-if="isInCreationDialog"
-            class="flex flex-col gap-2 bg-stone-700 text-white w-[272px] rounded-md shadow-md px-2 py-2"
+            class="flex flex-col gap-2 bg-stone-700 text-white w-[272px] rounded-md shadow-md px-2 py-2 h-fit"
             ref="newColumnDialog"
           >
             <Input

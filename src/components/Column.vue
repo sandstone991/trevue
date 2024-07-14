@@ -128,9 +128,8 @@ onUnmounted(() => {
 })
 </script>
 <template>
-  <div class="w-fit h-fit flex relative">
+  <div class="w-fit h-full flex relative" ref="columnRef">
     <div
-      ref="columnRef"
       :class="
         cn('bg-stone-900 text-white w-[272px] rounded-md shadow-md h-fit', {
           'opacity-50': isDragging
