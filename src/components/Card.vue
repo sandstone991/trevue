@@ -14,6 +14,7 @@ import invariant from 'tiny-invariant'
 import { useBoardStore } from '@/stores/board'
 import DropIndicator from './DropIndicator.vue'
 const props = defineProps<{ card: Card }>()
+const emit = defineEmits(['overCard', 'leaveCard'])
 const boards = useBoardStore()
 const cardRef = ref<HTMLDListElement | null>(null)
 type DNDState = { type: 'idle' } | { type: 'dragging' } | { type: 'preview' }
@@ -25,7 +26,7 @@ function useSetDom() {
     boards.setCardDom(props.card.id, cardRef.value!)
   })
   onUnmounted(() => {
-    boards.removeColumnDom(props.card.id)
+    boards.removeCardDom(props.card.id)
   })
 }
 useSetDom()
@@ -35,7 +36,11 @@ onMounted(() => {
   cleanup.value = combine(
     draggable({
       element: cardRef.value!,
-      getInitialData: () => ({ type: 'card', cardId: props.card.id }),
+      getInitialData: () => ({
+        type: 'card',
+        cardId: props.card.id,
+        columnId: props.card.parentColumnId
+      }),
       onDragStart: () => {
         dndState.value = { type: 'dragging' }
       },
@@ -51,7 +56,7 @@ onMounted(() => {
       },
       getIsSticky: () => true,
       getData: ({ input, element }) => {
-        const data = { type: 'card', cardId: props.card.id }
+        const data = { type: 'card', cardId: props.card.id, columnId: props.card.parentColumnId }
         return attachClosestEdge(data, {
           input,
           element,
@@ -62,6 +67,7 @@ onMounted(() => {
         if (args.source.data.cardId !== props.card.id) {
           closestEdge.value = extractClosestEdge(args.self.data)
         }
+        emit('overCard')
       },
       onDrag: (args) => {
         if (args.source.data.cardId !== props.card.id) {
@@ -70,12 +76,17 @@ onMounted(() => {
       },
       onDragLeave: () => {
         closestEdge.value = null
+        emit('leaveCard')
       },
       onDrop: () => {
         closestEdge.value = null
+        emit('leaveCard')
       }
     })
   )
+})
+onUnmounted(() => {
+  cleanup.value()
 })
 </script>
 

@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 import { type Column, type Card, type Operation } from '@/interface'
 import { reorder } from '@atlaskit/pragmatic-drag-and-drop/reorder';
 
-
+import {nanoid} from 'nanoid'
 export const useBoardStore = defineStore('board', () => {
   const columns = ref<Column[]>([])
   const columnIds = computed(() => columns.value.map((column) => column.id))
@@ -82,20 +82,21 @@ export const useBoardStore = defineStore('board', () => {
 
     function addColumn(boardName: string){
         const newColumn: Column = {
-            id: Date.now().toString(),
+            id: nanoid(),
             title: boardName,
             cards: []
         }
         _addColumn(newColumn)
     }
-    function addCard(boardId: string, cardTitle: string, cardDescription: string = "", cardLabels: string[] = []){
+    function addCard(columnId: string, cardTitle: string, cardDescription: string = "", cardLabels: string[] = []){
         const newCard: Card = {
-            id: Date.now().toString(),
+            id: nanoid(),
             title: cardTitle,
             description: cardDescription,
-            labels: cardLabels
+            labels: cardLabels,
+            parentColumnId: columnId
         }
-        _addCard(boardId, newCard)
+        _addCard(columnId, newCard)
     }
     function moveCard	({
 			startColumnId,
@@ -117,6 +118,7 @@ export const useBoardStore = defineStore('board', () => {
         } else {
             finishColumn.cards.push(card)
         }
+        card.parentColumnId = finishColumnId
     }
     const isEmpty = computed(() => columns.value.length === 0);
     
@@ -141,6 +143,7 @@ export const useBoardStore = defineStore('board', () => {
         setLastDndOperation,
         setCardDom,
         removeCardDom,
-        cardIdsToDom
+        cardIdsToDom,
+
     } 
 })

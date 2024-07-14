@@ -41,6 +41,9 @@ dependencies:
   lucide-vue-next:
     specifier: ^0.407.0
     version: 0.407.0(vue@3.4.31)
+  nanoid:
+    specifier: ^5.0.7
+    version: 5.0.7
   pinia:
     specifier: ^2.1.7
     version: 2.1.7(typescript@5.4.5)(vue@3.4.31)

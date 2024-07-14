@@ -64,6 +64,57 @@ onMounted(() => {
               finishIndex
             }
           })
+        } else if (source.data.type === 'card') {
+          const cardId = source.data.cardId as string
+          const columnId = source.data.columnId as string
+          const sourceColumn = boards.idToColumnMap[columnId].column
+          const cardIndex = sourceColumn.cards.findIndex((card) => card.id === cardId)
+          const [destenation] = location.current.dropTargets
+          const destenationCardId = destenation.data.cardId as string
+          const destenationColumnId = destenation.data.columnId as string
+          const destenationIndex = boards.idToColumnMap[destenationColumnId].column.cards.findIndex(
+            (card) => card.id === destenationCardId
+          )
+
+          if (columnId === destenationColumnId) {
+            const finishIndex = getReorderDestinationIndex({
+              axis: 'vertical',
+              closestEdgeOfTarget: null,
+              indexOfTarget: destenationIndex,
+              startIndex: cardIndex
+            })
+            boards.reorderCard(columnId, cardIndex, finishIndex)
+            boards.setLastDndOperation({
+              trigger: 'pointer',
+              outcome: {
+                type: 'card-reorder',
+                columnId,
+                startIndex: cardIndex,
+                finishIndex,
+                cardId: cardId
+              }
+            })
+            return
+          }
+          const closestEdgeOfTarget = extractClosestEdge(destenation.data)
+          boards.moveCard({
+            startColumnId: columnId,
+            finishColumnId: destenationColumnId,
+            itemIndexInStartColumn: cardIndex,
+            itemIndexInFinishColumn:
+              closestEdgeOfTarget === 'bottom' ? destenationIndex + 1 : destenationIndex
+          })
+          boards.setLastDndOperation({
+            trigger: 'pointer',
+            outcome: {
+              type: 'card-move',
+              finishColumnId: destenationColumnId,
+              itemIndexInFinishColumn:
+                closestEdgeOfTarget === 'bottom' ? destenationIndex + 1 : destenationIndex,
+              itemIndexInStartColumn: cardIndex,
+              cardId: cardId
+            }
+          })
         }
       }
     })

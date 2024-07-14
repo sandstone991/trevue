@@ -7,6 +7,7 @@ export interface Column {
     cards: Card[]
 }
 export interface Card {
+	parentColumnId: string
     id: string
     title: string
     description: string
@@ -30,12 +31,14 @@ export type Outcome =
 			columnId: string;
 			startIndex: number;
 			finishIndex: number;
+			cardId: string;
 	  }
 	| {
 			type: 'card-move';
 			finishColumnId: string;
 			itemIndexInStartColumn: number;
 			itemIndexInFinishColumn: number;
+			cardId: string;
 	  };
 
 export type Trigger = 'pointer' | 'keyboard';

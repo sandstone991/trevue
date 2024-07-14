@@ -84,6 +84,7 @@ onMounted(() => {
         isDragging.value = false
       }
     }),
+
     dropTargetForElements({
       element: columnRef.value!,
       canDrop: ({ source }) => {
@@ -149,7 +150,7 @@ onUnmounted(() => {
             'opacity-50': isDragging
           },
           {
-            'bg-indigo-400 border-blue-500 border-2': dndState.type === 'is-card-over'
+            'bg-slate-800': dndState.type === 'is-card-over'
           }
         )
       "
@@ -161,11 +162,17 @@ onUnmounted(() => {
         <span class="text-lg font-semibold">{{ column.title }}</span>
       </div>
       <ol
-        class="w-full h-full max-h-full overflow-auto px-2 py-2 space-y-3"
-        style="scrollbar-width: thin"
+        class="w-full h-full max-h-full px-2 py-2 space-y-3"
+        style="scrollbar-width: thin; overflow-y: auto; overflow-x: hidden"
         ref="scrollableRef"
       >
-        <Card v-for="card in column.cards" :key="card.id" :card="card" />
+        <Card
+          v-for="card in column.cards"
+          :key="card.id + column.id"
+          :card="card"
+          @leave-card="dndState = { type: 'idle' }"
+          @over-card="dndState = { type: 'is-card-over' }"
+        />
         <Button
           :as="'div'"
           variant="ghost"
